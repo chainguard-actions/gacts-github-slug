@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v1.3.5 | [`v1.3.5`](https://github.com/chainguard-actions/gacts-github-slug/tree/v1.3.5) | [`83cd3d9`](https://github.com/gacts/github-slug/commit/83cd3d95888be8777f0d9c810c1266da1c5c3ef1) |
+| v1.3.6 | [`v1.3.6`](https://github.com/chainguard-actions/gacts-github-slug/tree/v1.3.6) | [`c29c0dd`](https://github.com/gacts/github-slug/commit/c29c0ddd888a1703a6fc06c55a5f6ddd7beae490) |
 
 ## Privacy
 
