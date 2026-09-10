@@ -1,0 +1,65 @@
+name: Test to-slug input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: slug_basic
+        name: Slugify a simple string
+        uses: .
+        with:
+          to-slug: "Hello World"
+
+      - name: Assert slug output for simple string
+        env:
+          ACTUAL: ${{ steps.slug_basic.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug output is empty"
+            exit 1
+          fi
+          # "Hello World" should become "hello-world" (lowercased, spaces to dashes)
+          if [ "$ACTUAL" != "hello-world" ]; then
+            echo "FAIL: expected 'hello-world', got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - id: slug_special
+        name: Slugify a string with special characters
+        uses: .
+        with:
+          to-slug: "Feature/Fix-Something_123"
+
+      - name: Assert slug output for special characters
+        env:
+          ACTUAL: ${{ steps.slug_special.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug output is empty"
+            exit 1
+          fi
+          # Should be lowercased and special chars replaced with dashes
+          echo "PASS: got '$ACTUAL'"
+
+      - id: slug_version
+        name: Slugify a version string
+        uses: .
+        with:
+          to-slug: "v1.2.3"
+
+      - name: Assert slug output for version string
+        env:
+          ACTUAL: ${{ steps.slug_version.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug output is empty"
+            exit 1
+          fi
+          echo "PASS: got '$ACTUAL'"

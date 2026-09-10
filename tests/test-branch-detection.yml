@@ -1,0 +1,77 @@
+name: Test branch detection outputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        name: Run action on branch context
+        uses: .
+
+      - name: Assert is-branch is true
+        env:
+          IS_BRANCH: ${{ steps.action.outputs.is-branch }}
+        run: |
+          echo "is-branch: $IS_BRANCH"
+          if [ "$IS_BRANCH" != "true" ]; then
+            echo "FAIL: expected is-branch='true', got '$IS_BRANCH'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert is-tag is false
+        env:
+          IS_TAG: ${{ steps.action.outputs.is-tag }}
+        run: |
+          echo "is-tag: $IS_TAG"
+          if [ "$IS_TAG" != "false" ]; then
+            echo "FAIL: expected is-tag='false', got '$IS_TAG'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert branch-name is set
+        env:
+          BRANCH_NAME: ${{ steps.action.outputs.branch-name }}
+        run: |
+          echo "branch-name: $BRANCH_NAME"
+          if [ -z "$BRANCH_NAME" ]; then
+            echo "FAIL: branch-name is empty"
+            exit 1
+          fi
+          # Under act harness, the branch is 'act-harness'
+          if [ "$BRANCH_NAME" != "act-harness" ]; then
+            echo "FAIL: expected 'act-harness', got '$BRANCH_NAME'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert branch-name-slug is set
+        env:
+          BRANCH_SLUG: ${{ steps.action.outputs.branch-name-slug }}
+        run: |
+          echo "branch-name-slug: $BRANCH_SLUG"
+          if [ -z "$BRANCH_SLUG" ]; then
+            echo "FAIL: branch-name-slug is empty"
+            exit 1
+          fi
+          # 'act-harness' slugified should remain 'act-harness'
+          if [ "$BRANCH_SLUG" != "act-harness" ]; then
+            echo "FAIL: expected 'act-harness', got '$BRANCH_SLUG'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert tag-name is empty (not a tag build)
+        env:
+          TAG_NAME: ${{ steps.action.outputs.tag-name }}
+        run: |
+          echo "tag-name: '$TAG_NAME'"
+          if [ -n "$TAG_NAME" ]; then
+            echo "FAIL: expected tag-name to be empty on a branch build, got '$TAG_NAME'"
+            exit 1
+          fi
+          echo "PASS"
