@@ -1,0 +1,55 @@
+{
+  "name": "github-slug",
+  "description": "GitHub Action to expose slug values of branch/tag/version inside your GitHub workflow",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint --config package.json './src/**/*.js'",
+    "build": "ncc build src/index.js -o dist --minify --no-cache",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gacts/github-slug.git"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "slug"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gacts/github-slug/issues"
+  },
+  "homepage": "https://github.com/gacts/github-slug#readme",
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0",
+    "cli-table": "^0.3.11",
+    "slugify": "^1.6.8"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.3.0",
+    "@vercel/ncc": "^0.38.4",
+    "eslint": "^8.57.0",
+    "jest": "^30.3.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
+    "rules": {}
+  },
+  "volta": {
+    "node": "24"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

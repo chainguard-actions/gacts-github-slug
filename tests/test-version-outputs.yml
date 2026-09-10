@@ -1,0 +1,83 @@
+name: Test version outputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+
+      - name: Assert version is non-empty (always set for branch builds)
+        env:
+          VERSION: ${{ steps.action.outputs.version }}
+        run: |
+          echo "version: $VERSION"
+          if [ -z "$VERSION" ]; then
+            echo "FAIL: version is empty (should always be non-empty)"
+            exit 1
+          fi
+          echo "PASS: version='$VERSION'"
+
+      - name: Assert version-major is set (defaults to 0 for non-semver branch)
+        env:
+          VERSION_MAJOR: ${{ steps.action.outputs.version-major }}
+        run: |
+          echo "version-major: $VERSION_MAJOR"
+          if [ -z "$VERSION_MAJOR" ]; then
+            echo "FAIL: version-major is empty"
+            exit 1
+          fi
+          if ! echo "$VERSION_MAJOR" | grep -qE '^[0-9]+$'; then
+            echo "FAIL: version-major is not a number: '$VERSION_MAJOR'"
+            exit 1
+          fi
+          echo "PASS: version-major='$VERSION_MAJOR'"
+
+      - name: Assert version-minor is set (defaults to 0 for non-semver branch)
+        env:
+          VERSION_MINOR: ${{ steps.action.outputs.version-minor }}
+        run: |
+          echo "version-minor: $VERSION_MINOR"
+          if [ -z "$VERSION_MINOR" ]; then
+            echo "FAIL: version-minor is empty"
+            exit 1
+          fi
+          if ! echo "$VERSION_MINOR" | grep -qE '^[0-9]+$'; then
+            echo "FAIL: version-minor is not a number: '$VERSION_MINOR'"
+            exit 1
+          fi
+          echo "PASS: version-minor='$VERSION_MINOR'"
+
+      - name: Assert version-patch is set (defaults to 0 for non-semver branch)
+        env:
+          VERSION_PATCH: ${{ steps.action.outputs.version-patch }}
+        run: |
+          echo "version-patch: $VERSION_PATCH"
+          if [ -z "$VERSION_PATCH" ]; then
+            echo "FAIL: version-patch is empty"
+            exit 1
+          fi
+          if ! echo "$VERSION_PATCH" | grep -qE '^[0-9]+$'; then
+            echo "FAIL: version-patch is not a number: '$VERSION_PATCH'"
+            exit 1
+          fi
+          echo "PASS: version-patch='$VERSION_PATCH'"
+
+      - name: Assert version-semantic is non-empty
+        env:
+          VERSION_SEMANTIC: ${{ steps.action.outputs.version-semantic }}
+        run: |
+          echo "version-semantic: $VERSION_SEMANTIC"
+          if [ -z "$VERSION_SEMANTIC" ]; then
+            echo "FAIL: version-semantic is empty (should always be non-empty)"
+            exit 1
+          fi
+          # Should be in format MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-suffix
+          if ! echo "$VERSION_SEMANTIC" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+            echo "FAIL: version-semantic does not start with MAJOR.MINOR.PATCH format: '$VERSION_SEMANTIC'"
+            exit 1
+          fi
+          echo "PASS: version-semantic='$VERSION_SEMANTIC'"

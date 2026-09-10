@@ -1,0 +1,85 @@
+name: Test slug with special characters
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Test slug with simple lowercase string
+        id: simple
+        uses: .
+        with:
+          to-slug: "simple-string"
+
+      - name: Assert simple slug is unchanged
+        env:
+          ACTUAL: ${{ steps.simple.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug is empty"
+            exit 1
+          fi
+          echo "PASS: slug='$ACTUAL'"
+
+      - name: Test slug with uppercase input
+        id: upper
+        uses: .
+        with:
+          to-slug: "UPPERCASE-STRING"
+
+      - name: Assert uppercase slug is lowercased
+        env:
+          ACTUAL: ${{ steps.upper.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug is empty"
+            exit 1
+          fi
+          if echo "$ACTUAL" | grep -qE '[A-Z]'; then
+            echo "FAIL: slug still contains uppercase: '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: slug='$ACTUAL'"
+
+      - name: Test slug with version-like string
+        id: version
+        uses: .
+        with:
+          to-slug: "v1.2.3"
+
+      - name: Assert version slug is set
+        env:
+          ACTUAL: ${{ steps.version.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug is empty for version string"
+            exit 1
+          fi
+          echo "PASS: slug='$ACTUAL'"
+
+      - name: Test slug with spaces and special chars
+        id: special
+        uses: .
+        with:
+          to-slug: "My Feature Branch #42"
+
+      - name: Assert special chars slug is set and clean
+        env:
+          ACTUAL: ${{ steps.special.outputs.slug }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: slug is empty for special chars input"
+            exit 1
+          fi
+          # Should not contain spaces or # characters
+          if echo "$ACTUAL" | grep -qE '[ #]'; then
+            echo "FAIL: slug contains spaces or # characters: '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: slug='$ACTUAL'"

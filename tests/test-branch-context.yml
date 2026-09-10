@@ -1,0 +1,59 @@
+name: Test branch context outputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+
+      - name: Assert is-branch is true
+        env:
+          IS_BRANCH: ${{ steps.action.outputs.is-branch }}
+        run: |
+          echo "is-branch: $IS_BRANCH"
+          if [ "$IS_BRANCH" != "true" ]; then
+            echo "FAIL: expected is-branch='true', got '$IS_BRANCH'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert is-tag is false
+        env:
+          IS_TAG: ${{ steps.action.outputs.is-tag }}
+        run: |
+          echo "is-tag: $IS_TAG"
+          if [ "$IS_TAG" != "false" ]; then
+            echo "FAIL: expected is-tag='false', got '$IS_TAG'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert branch-name is set
+        env:
+          BRANCH_NAME: ${{ steps.action.outputs.branch-name }}
+        run: |
+          echo "branch-name: $BRANCH_NAME"
+          if [ -z "$BRANCH_NAME" ]; then
+            echo "FAIL: branch-name is empty"
+            exit 1
+          fi
+          echo "PASS: branch-name='$BRANCH_NAME'"
+
+      - name: Assert branch-name-slug is set and lowercase
+        env:
+          BRANCH_SLUG: ${{ steps.action.outputs.branch-name-slug }}
+        run: |
+          echo "branch-name-slug: $BRANCH_SLUG"
+          if [ -z "$BRANCH_SLUG" ]; then
+            echo "FAIL: branch-name-slug is empty"
+            exit 1
+          fi
+          if echo "$BRANCH_SLUG" | grep -qE '[A-Z /]'; then
+            echo "FAIL: branch-name-slug contains uppercase or spaces/slashes: $BRANCH_SLUG"
+            exit 1
+          fi
+          echo "PASS: branch-name-slug='$BRANCH_SLUG'"

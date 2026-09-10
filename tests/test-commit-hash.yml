@@ -1,0 +1,57 @@
+name: Test commit hash outputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+
+      - name: Assert commit-hash is a full SHA
+        env:
+          COMMIT_HASH: ${{ steps.action.outputs.commit-hash }}
+        run: |
+          echo "commit-hash: $COMMIT_HASH"
+          if [ -z "$COMMIT_HASH" ]; then
+            echo "FAIL: commit-hash is empty"
+            exit 1
+          fi
+          # Full SHA should be 40 hex characters
+          if ! echo "$COMMIT_HASH" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "FAIL: commit-hash is not a valid 40-char SHA: '$COMMIT_HASH'"
+            exit 1
+          fi
+          echo "PASS: commit-hash='$COMMIT_HASH'"
+
+      - name: Assert commit-hash-short is 7 characters
+        env:
+          COMMIT_SHORT: ${{ steps.action.outputs.commit-hash-short }}
+        run: |
+          echo "commit-hash-short: $COMMIT_SHORT"
+          if [ -z "$COMMIT_SHORT" ]; then
+            echo "FAIL: commit-hash-short is empty"
+            exit 1
+          fi
+          # Short SHA should be 7 hex characters
+          if ! echo "$COMMIT_SHORT" | grep -qE '^[0-9a-f]{7}$'; then
+            echo "FAIL: commit-hash-short is not a valid 7-char SHA: '$COMMIT_SHORT'"
+            exit 1
+          fi
+          echo "PASS: commit-hash-short='$COMMIT_SHORT'"
+
+      - name: Assert commit-hash-short is prefix of commit-hash
+        env:
+          COMMIT_HASH: ${{ steps.action.outputs.commit-hash }}
+          COMMIT_SHORT: ${{ steps.action.outputs.commit-hash-short }}
+        run: |
+          echo "commit-hash: $COMMIT_HASH"
+          echo "commit-hash-short: $COMMIT_SHORT"
+          PREFIX="${COMMIT_HASH:0:7}"
+          if [ "$PREFIX" != "$COMMIT_SHORT" ]; then
+            echo "FAIL: commit-hash-short '$COMMIT_SHORT' is not the first 7 chars of commit-hash '$COMMIT_HASH'"
+            exit 1
+          fi
+          echo "PASS: short hash matches prefix of full hash"
