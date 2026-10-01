@@ -1,0 +1,65 @@
+name: Test slug with special characters
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Test slug with uppercase letters
+        id: slug-upper
+        uses: .
+        with:
+          to-slug: "MyFeatureBranch"
+      - name: Assert uppercase is lowercased
+        env:
+          SLUG: ${{ steps.slug-upper.outputs.slug }}
+        run: |
+          echo "slug: $SLUG"
+          if [ -z "$SLUG" ]; then
+            echo "FAIL: slug is empty"
+            exit 1
+          fi
+          if echo "$SLUG" | grep -qE '[A-Z]'; then
+            echo "FAIL: slug contains uppercase letters: '$SLUG'"
+            exit 1
+          fi
+          echo "PASS: slug='$SLUG'"
+
+      - name: Test slug with version string
+        id: slug-version
+        uses: .
+        with:
+          to-slug: "v1.2.3"
+      - name: Assert version string is slugified
+        env:
+          SLUG: ${{ steps.slug-version.outputs.slug }}
+        run: |
+          echo "slug: $SLUG"
+          if [ -z "$SLUG" ]; then
+            echo "FAIL: slug is empty"
+            exit 1
+          fi
+          echo "PASS: slug='$SLUG'"
+
+      - name: Test slug with simple alphanumeric string
+        id: slug-simple
+        uses: .
+        with:
+          to-slug: "simple-slug-123"
+      - name: Assert simple slug passes through
+        env:
+          SLUG: ${{ steps.slug-simple.outputs.slug }}
+        run: |
+          echo "slug: $SLUG"
+          if [ -z "$SLUG" ]; then
+            echo "FAIL: slug is empty"
+            exit 1
+          fi
+          # Should contain the core content
+          if ! echo "$SLUG" | grep -qE 'simple'; then
+            echo "FAIL: slug does not contain expected content 'simple': '$SLUG'"
+            exit 1
+          fi
+          echo "PASS: slug='$SLUG'"

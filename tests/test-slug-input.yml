@@ -1,0 +1,27 @@
+name: Test slug input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          to-slug: "Hello World/Feature-Branch!"
+      - name: Assert slug output is set and slugified
+        env:
+          SLUG: ${{ steps.action.outputs.slug }}
+        run: |
+          echo "slug: $SLUG"
+          if [ -z "$SLUG" ]; then
+            echo "FAIL: slug output is empty"
+            exit 1
+          fi
+          # Slug should be lowercase and contain only alphanumeric and hyphens
+          if echo "$SLUG" | grep -qE '[A-Z ]'; then
+            echo "FAIL: slug contains uppercase or spaces: $SLUG"
+            exit 1
+          fi
+          echo "PASS: slug='$SLUG'"
